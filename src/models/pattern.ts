@@ -17,6 +17,8 @@ export interface Pattern {
   context_tags: string[];
   /** 模式提取置信度 0-1 */
   confidence: number;
+  /** 决策理由 */
+  reason?: string;
   /** 提取来源：rule / llm / mixed */
   _source?: 'rule' | 'llm';
 }

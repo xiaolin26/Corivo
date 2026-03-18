@@ -8,7 +8,10 @@
  */
 export declare class Heartbeat {
     private running;
+    private db;
+    private ruleEngine;
     private timeoutRef;
+    constructor();
     /**
      * 启动心跳循环
      */
@@ -26,9 +29,17 @@ export declare class Heartbeat {
      */
     private processPendingBlocks;
     /**
+     * 标注 block
+     */
+    private annotateBlock;
+    /**
      * 处理衰减
      */
     private processVitalityDecay;
+    /**
+     * 生命力转状态
+     */
+    private vitalityToStatus;
     /**
      * 延迟函数
      */

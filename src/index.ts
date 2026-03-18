@@ -8,3 +8,4 @@ export * from './models';
 export * from './errors';
 export * from './crypto/keys';
 export * from './storage/database';
+export * from './engine/rules';

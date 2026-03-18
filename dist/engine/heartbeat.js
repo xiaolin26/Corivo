@@ -3,13 +3,27 @@
  *
  * 后台运行，自动处理 pending block 和执行衰减
  */
+import fs from 'node:fs/promises';
+import { CorivoDatabase, getConfigDir } from '../storage/database';
+import { KeyManager } from '../crypto/keys';
+import { RuleEngine } from './rules';
+import { TechChoiceRule } from './rules/tech-choice';
+import { DatabaseError } from '../errors';
 const HEARTBEAT_INTERVAL = 5000; // 5 秒
+const PENDING_BATCH_SIZE = 10; // 每次处理的 pending 数量
 /**
  * 心跳引擎
  */
 export class Heartbeat {
     running = false;
+    db = null;
+    ruleEngine;
     timeoutRef = null;
+    constructor() {
+        // 初始化规则引擎
+        this.ruleEngine = new RuleEngine();
+        this.ruleEngine.register(new TechChoiceRule());
+    }
     /**
      * 启动心跳循环
      */
@@ -21,12 +35,27 @@ export class Heartbeat {
         // 从环境变量获取密钥（由 CLI 进程传入）
         const encryptedDbKey = process.env.CORIVO_ENCRYPTED_KEY;
         const dbPath = process.env.CORIVO_DB_PATH;
+        const configDir = process.env.CORIVO_CONFIG_DIR || getConfigDir();
         if (!encryptedDbKey || !dbPath) {
             throw new Error('缺少环境变量：CORIVO_ENCRYPTED_KEY 或 CORIVO_DB_PATH');
         }
-        // 需要从配置文件获取主密钥，这里简化为直接传递
-        // 实际应用中可以通过 IPC 从主进程获取
-        console.log('心跳进程启动中...');
+        // 读取配置获取 salt
+        const configPath = `${configDir}/config.json`;
+        let config;
+        try {
+            const content = await fs.readFile(configPath, 'utf-8');
+            config = JSON.parse(content);
+        }
+        catch {
+            throw new Error('无法读取配置文件');
+        }
+        // 派生主密钥并解密数据库密钥
+        const salt = Buffer.from(config.salt, 'base64');
+        const masterKey = KeyManager.deriveMasterKey('', salt); // 守护进程不需要密码，直接用空字符串派生（实际应用需要更安全的方案）
+        const dbKey = KeyManager.decryptDatabaseKey(encryptedDbKey, masterKey);
+        // 打开数据库
+        this.db = CorivoDatabase.getInstance({ path: dbPath, key: dbKey });
+        console.log(`心跳守护进程启动中... (规则: ${this.ruleEngine.ruleCount})`);
         this.running = true;
         this.run();
     }
@@ -43,7 +72,12 @@ export class Heartbeat {
                 await this.processVitalityDecay();
             }
             catch (error) {
-                console.error('心跳处理错误:', error);
+                if (error instanceof DatabaseError) {
+                    console.error('[心跳] 数据库错误:', error.message);
+                }
+                else {
+                    console.error('[心跳] 处理错误:', error);
+                }
             }
             // 等待下一个周期
             const elapsed = Date.now() - start;
@@ -63,21 +97,134 @@ export class Heartbeat {
             clearTimeout(this.timeoutRef);
             this.timeoutRef = null;
         }
+        if (this.db) {
+            CorivoDatabase.closeAll();
+            this.db = null;
+        }
     }
     /**
      * 处理 pending block
      */
     async processPendingBlocks() {
-        // TODO: 实现数据库连接和查询
-        // 这里需要先实现从配置文件读取主密钥的逻辑
-        // 为简化，暂时只打印日志
-        console.log('[心跳] 处理 pending blocks...');
+        if (!this.db)
+            return;
+        // 查询待标注的 block
+        const pending = this.db.queryBlocks({
+            annotation: 'pending',
+            limit: PENDING_BATCH_SIZE,
+        });
+        if (pending.length === 0)
+            return;
+        console.log(`[心跳] 处理 ${pending.length} 个待标注 block`);
+        for (const block of pending) {
+            try {
+                const annotation = this.annotateBlock(block.content);
+                this.db.updateBlock(block.id, { annotation });
+                console.log(`  ${block.id}: ${annotation}`);
+            }
+            catch (error) {
+                console.error(`  ${block.id}: 标注失败`, error);
+            }
+        }
+    }
+    /**
+     * 标注 block
+     */
+    annotateBlock(content) {
+        // 先尝试规则引擎
+        const pattern = this.ruleEngine.extract(content);
+        if (pattern) {
+            // 根据决策类型返回标注
+            if (pattern.type === '技术选型') {
+                return `决策 · project · ${pattern.decision.toLowerCase()}`;
+            }
+        }
+        // 关键词标注
+        const lower = content.toLowerCase();
+        // 密码/凭证
+        if (/密码|token|api[- ]?key|secret|凭证|密钥/.test(lower)) {
+            return '事实 · asset · 凭证';
+        }
+        // 决策
+        if (/选择|决定|选型|采用|使用/.test(content)) {
+            return '决策 · project · 项目';
+        }
+        // 代码
+        if (/\.(js|ts|py|java|go|rs|c|cpp|h)/i.test(content) ||
+            /javascript|typescript|python|golang|rust/.test(lower)) {
+            return '知识 · knowledge · 代码';
+        }
+        // 配置
+        if (/config|配置|设置|环境变量/.test(lower)) {
+            return '知识 · knowledge · 配置';
+        }
+        return '知识 · knowledge · 通用';
     }
     /**
      * 处理衰减
      */
     async processVitalityDecay() {
-        console.log('[心跳] 处理 vitality 衰减...');
+        if (!this.db)
+            return;
+        // 获取所有活跃 block
+        const blocks = this.db.queryBlocks({ limit: 100 });
+        const now = Date.now();
+        const decayCount = { decayed: 0, unchanged: 0 };
+        for (const block of blocks) {
+            // 跳过已归档的
+            if (block.status === 'archived')
+                continue;
+            // 计算距离上次访问的天数
+            const lastAccessed = block.last_accessed || block.created_at * 1000;
+            const daysSinceAccess = (now - lastAccessed) / 86400000;
+            if (daysSinceAccess < 1) {
+                // 24 小时内不衰减
+                decayCount.unchanged++;
+                continue;
+            }
+            // 根据标注推断衰减率
+            let decayRate = 1; // 每天 1 点（默认）
+            if (block.annotation.includes('事实')) {
+                decayRate = 0.5; // 事实衰减慢
+            }
+            else if (block.annotation.includes('知识')) {
+                decayRate = 2; // 知识衰减快
+            }
+            else if (block.annotation.includes('决策')) {
+                decayRate = 0.3; // 决策衰减最慢
+            }
+            // 计算新的生命力
+            const decayAmount = Math.floor(daysSinceAccess * decayRate);
+            const newVitality = Math.max(0, block.vitality - decayAmount);
+            // 如果生命力没变，跳过
+            if (newVitality === block.vitality) {
+                decayCount.unchanged++;
+                continue;
+            }
+            // 计算新状态
+            const newStatus = this.vitalityToStatus(newVitality);
+            // 更新
+            this.db.updateBlock(block.id, {
+                vitality: newVitality,
+                status: newStatus,
+            });
+            decayCount.decayed++;
+        }
+        if (decayCount.decayed > 0) {
+            console.log(`[心跳] 衰减处理: ${decayCount.decayed} 个更新, ${decayCount.unchanged} 个不变`);
+        }
+    }
+    /**
+     * 生命力转状态
+     */
+    vitalityToStatus(vitality) {
+        if (vitality === 0)
+            return 'archived';
+        if (vitality < 30)
+            return 'cold';
+        if (vitality < 60)
+            return 'cooling';
+        return 'active';
     }
     /**
      * 延迟函数
