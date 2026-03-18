@@ -36,6 +36,7 @@ program
   .option('-c, --content <text>', '内容')
   .option('-a, --annotation <text>', '标注（性质 · 领域 · 标签）')
   .option('-s, --source <text>', '来源')
+  .option('--pending', '以 pending 模式保存（稍后由心跳进程自动标注）')
   .action(saveCommand);
 
 program
@@ -43,6 +44,8 @@ program
   .description('查询信息')
   .argument('<query>', '搜索关键词')
   .option('-l, --limit <number>', '返回数量', '10')
+  .option('-v, --verbose', '显示详细信息')
+  .option('-p, --pattern', '显示决策模式')
   .action(queryCommand);
 
 program

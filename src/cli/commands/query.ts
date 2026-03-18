@@ -6,6 +6,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import chalk from 'chalk';
 import { CorivoDatabase, getDefaultDatabasePath, getConfigDir } from '../../storage/database';
 import { KeyManager } from '../../crypto/keys';
 import { ConfigError } from '../../errors';
@@ -14,6 +15,8 @@ import { readPassword } from './save';
 
 interface QueryOptions {
   limit?: string;
+  verbose?: boolean;
+  pattern?: boolean;
 }
 
 export async function queryCommand(query: string, options: QueryOptions): Promise<void> {
@@ -45,24 +48,79 @@ export async function queryCommand(query: string, options: QueryOptions): Promis
   const results = db.searchBlocks(query, limit);
 
   if (results.length === 0) {
-    console.log(`未找到与 "${query}" 相关的记忆`);
+    console.log(chalk.yellow(`\n未找到与 "${query}" 相关的记忆`));
     return;
   }
 
   // 显示结果
-  console.log(`找到 ${results.length} 条相关记忆:\n`);
+  console.log(chalk.cyan(`\n找到 ${results.length} 条相关记忆:\n`));
 
   for (const block of results) {
-    console.log(`${block.id}: ${block.content.slice(0, 100)}`);
-    console.log(`  标注: ${block.annotation} | 生命力: ${block.vitality} | 状态: ${block.status}`);
-    console.log(`  更新: ${new Date(block.updated_at * 1000).toLocaleString('zh-CN')}\n`);
+    // ID 和内容
+    console.log(chalk.gray(block.id) + ' ' + chalk.white(block.content));
+
+    // 元信息
+    const annotation = block.annotation || 'pending';
+    const statusColor = getStatusColor(block.status);
+    const statusText = statusColor(block.status);
+
+    console.log(
+      chalk.gray(`  标注: ${annotation} | 生命力: ${block.vitality} | 状态: ${statusText}`)
+    );
+
+    // 详细信息
+    if (options.verbose) {
+      console.log(chalk.gray(`  访问次数: ${block.access_count}`));
+      if (block.last_accessed) {
+        const lastAccess = new Date(block.last_accessed);
+        const daysAgo = Math.floor((Date.now() - block.last_accessed) / 86400000);
+        console.log(chalk.gray(`  最后访问: ${lastAccess.toLocaleString('zh-CN')} (${daysAgo}天前)`));
+      }
+      if (block.pattern) {
+        console.log(chalk.gray(`  模式: ${block.pattern.type} - ${block.pattern.decision}`));
+      }
+    }
+
+    console.log();
   }
 
   // 附加上下文推送
   const pusher = new ContextPusher(db);
-  const context = await pusher.pushContext(query, 5);
+
+  // 决策模式推送
+  if (options.pattern) {
+    const patternContext = await pusher.pushPatterns(query, 3);
+    if (patternContext) {
+      console.log(patternContext);
+    }
+  }
+
+  // 相关记忆推送
+  const context = await pusher.pushContext(query, 5, {
+    showAnnotation: true,
+    showVitality: true,
+    showTime: options.verbose,
+  });
 
   if (context) {
     console.log(context);
+  }
+}
+
+/**
+ * 获取状态对应的颜色函数
+ */
+function getStatusColor(status: string): (text: string) => string {
+  switch (status) {
+    case 'active':
+      return chalk.green;
+    case 'cooling':
+      return chalk.yellow;
+    case 'cold':
+      return chalk.hex('#FF9500'); // Orange
+    case 'archived':
+      return chalk.gray;
+    default:
+      return chalk.gray;
   }
 }
