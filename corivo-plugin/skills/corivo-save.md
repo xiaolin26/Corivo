@@ -46,16 +46,45 @@ allowed-tools: Bash, AskUserQuestion
 
 ## 执行步骤
 
-1. **确认保存内容**：向用户确认要保存的内容
-
-2. **确定记忆类型**：根据内容选择合适的性质和领域
-
-3. **执行保存命令**：
+0. **检测 Corivo 是否安装**：
    ```bash
-   corivo save "{content}" --annotation "{nature} · {domain} · {tag}"
+   which corivo || echo "NOT_INSTALLED"
    ```
 
-4. **标注来源**：保存成功后回复 `[corivo] 已记录：{简要内容}`
+   - 如果返回 `NOT_INSTALLED`：提示用户安装
+     ```
+     [corivo] 首次使用需要安装 Corivo：
+
+     npm install -g corivo
+     corivo init
+
+     安装完成后，继续对话即可。
+     ```
+
+   - 如果已安装：继续下一步
+
+1. **检测数据库是否初始化**：
+   ```bash
+   corivo status --no-password 2>&1 | grep "未初始化"
+   ```
+
+   - 如果未初始化：提示用户
+     ```
+     [corivo] 数据库未初始化，请运行：corivo init
+     ```
+
+   - 如果已初始化：继续下一步
+
+2. **确认保存内容**：向用户确认要保存的内容
+
+3. **确定记忆类型**：根据内容选择合适的性质和领域
+
+4. **执行保存命令**：
+   ```bash
+   corivo save --content "{content}" --annotation "{nature} · {domain} · {tag}" --no-password
+   ```
+
+5. **标注来源**：保存成功后回复 `[corivo] 已记录：{简要内容}`
 
 ## 示例对话
 

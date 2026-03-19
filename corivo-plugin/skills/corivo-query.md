@@ -18,14 +18,31 @@ allowed-tools: Bash, AskUserQuestion
 
 ## 查询方法
 
+### 前置检测
+
+**0. 检测 Corivo 是否安装**：
+   ```bash
+   which corivo || echo "NOT_INSTALLED"
+   ```
+
+   - 如果返回 `NOT_INSTALLED`：提示用户安装
+     ```
+     [corivo] 需要先安装 Corivo：
+
+     npm install -g corivo
+     corivo init
+     ```
+
+   - 如果已安装：继续查询
+
 ### 1. 关键词搜索
 ```bash
-corivo query "关键词" --limit 10
+corivo query "关键词" --limit 10 --no-password
 ```
 
 ### 2. 按类型过滤
 ```bash
-corivo query "关键词" --annotation "决策 · project" --limit 5
+corivo query "关键词" --annotation "决策 · project" --limit 5 --no-password
 ```
 
 ### 3. 查看状态
