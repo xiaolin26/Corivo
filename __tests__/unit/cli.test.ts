@@ -46,11 +46,17 @@ describe('CLI Commands', () => {
 
   describe('initCommand validation', () => {
     it('should validate password strength', async () => {
-      // 弱密码应该被拒绝
-      const weakPasswords = ['', '123', 'abc', 'password'];
+      // 弱密码应该被拒绝（太短或单一类型）
+      const weakPasswords = ['', '123', 'abc', 'password', '12345678'];
 
       for (const pwd of weakPasswords) {
-        const isValid = pwd.length >= 8;
+        // 检查密码强度：至少8位且包含多种字符类型
+        const hasLower = /[a-z]/.test(pwd);
+        const hasUpper = /[A-Z]/.test(pwd);
+        const hasDigit = /\d/.test(pwd);
+        const hasSpecial = /[^a-zA-Z0-9]/.test(pwd);
+        const varietyCount = [hasLower, hasUpper, hasDigit, hasSpecial].filter(Boolean).length;
+        const isValid = pwd.length >= 8 && varietyCount >= 2;
         expect(isValid).toBe(false);
       }
     });
