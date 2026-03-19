@@ -1,0 +1,34 @@
+{
+  "name": "corivo",
+  "owner": {
+    "name": "xiaolin26",
+    "email": "xiaolin@example.com"
+  },
+  "metadata": {
+    "description": "你的赛博伙伴 — 记忆存储与智能推送。为 Claude Code 提供持久化记忆功能，自动保存和检索对话中的关键信息。",
+    "version": "0.10.0"
+  },
+  "plugins": [
+    {
+      "name": "corivo-save",
+      "source": "./skills/corivo-save.md",
+      "description": "保存记忆到 Corivo 数据库。支持保存事实、知识、决策、指令等多种类型的记忆块。",
+      "category": "memory",
+      "tags": ["save", "memory", "storage", "knowledge"]
+    },
+    {
+      "name": "corivo-query",
+      "source": "./skills/corivo-query.md",
+      "description": "从 Corivo 数据库查询记忆。支持全文搜索、按 annotation 过滤、按活力值排序等。",
+      "category": "memory",
+      "tags": ["query", "search", "retrieve", "memory"]
+    },
+    {
+      "name": "corivo-status",
+      "source": "./",
+      "description": "状态栏显示 Corivo 记忆统计：总块数、活跃块、最近保存等。",
+      "category": "monitoring",
+      "tags": ["status", "hud", "monitoring", "statistics"]
+    }
+  ]
+}
