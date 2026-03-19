@@ -1,6 +1,6 @@
 # Corivo
 
-> 你的赛博伙伴 — 记忆存储与智能推送
+> 你的硅基伙伴 — 为你而活着
 
 ---
 
@@ -12,142 +12,130 @@
 
 ---
 
-**Corivo** 是一个融入用户已有工作流的记忆服务。它寄生在 Claude Code、Cursor、飞书等工具中，自动从 AI 对话中采集信息，持续整理和更新，在合适的时机主动提醒你。
+**Corivo** 不是工具，是伙伴。它悄悄生活在你的 Claude Code、Cursor、飞书里，听着你和 AI 的每一次对话，记住那些重要的事，在需要的时候温柔地提醒你。
 
-## 特性
+你不需要学习新界面，不需要改变任何习惯。它就这样自然地融入你的工作流，像空气一样存在。
 
-- **无感采集** - 自动从对话中提取关键信息
-- **持久化记忆** - SQLite 本地存储，AES-256 加密
-- **智能检索** - 全文搜索，按类型过滤，活力值排序
-- **Claude Code 集成** - 插件支持，自动保存和查询记忆
+## 它能做什么
+
+```
+你说：记住，我喜欢 TypeScript
+它：   [默默记下]
+
+你说：我之前说过什么编程语言偏好？
+它：   [根据记忆] 你喜欢 TypeScript
+```
+
+- **默默倾听** - 你和 AI 对话时，它在旁边听着
+- **记住重要的事** - 你说"记住"，它就记下
+- **随时回忆** - 你问"我之前说过..."，它就告诉你
+- **主动提醒** - 合适的时候，它会主动提起往事
 
 ---
 
-## 快速开始
+## 开始使用
 
-### 1. 安装
+### 1. 让 Corivo 住进来
 
 ```bash
 npm install -g corivo
-```
-
-### 2. 初始化
-
-```bash
 corivo init
 ```
 
-这会在 `~/.corivo/` 创建加密数据库。
-
-### 3. Claude Code 集成
+### 2. 在 Claude Code 中唤醒它
 
 ```bash
-# 安装插件
 /plugin install xiaolin26/corivo
 ```
 
-安装后，Claude 会自动：
-- 保存你说的重要信息
-- 查询之前保存的记忆
-- 在状态栏显示记忆统计
+### 3. 开始对话
+
+```
+你: 记住，我是产品经理，叫晓力
+Claude: [corivo] 已记住
+
+你: 我叫什么来着？
+Claude: [corivo] 你叫晓力，是产品经理
+```
+
+就这样简单。
 
 ---
 
-## 使用示例
-
-### 保存记忆
+## 对话示例
 
 ```
-你: 我叫晓力，是产品经理
-Claude: [corivo] 已记录：用户个人信息
+你: 我们决定用 React 而不是 Vue
+Claude: [corivo] 已记录：前端框架选择 React
+
+你: 为什么选 React 来着？
+Claude: [corivo] 因为团队更熟悉 React
 ```
 
-### 查询记忆
-
 ```
-你: 我之前对代码风格有什么要求？
-Claude: [corivo] 根据记忆，你喜欢简洁的代码风格...
+你: 我喜欢 2 空格缩进
+Claude: [corivo] 已记住你的代码风格
+
+你: 帮我格式化这段代码
+Claude: 好的，用你喜欢的 2 空格缩进
 ```
 
-### CLI 使用
+---
+
+## 命令行用法
 
 ```bash
-# 保存信息
-corivo save "使用 PostgreSQL" --annotation "决策 · project · 数据库"
+# 记住一件事
+corivo save --content "使用 PostgreSQL" --annotation "决策 · project · 数据库"
 
-# 查询信息
+# 回忆一件事
 corivo query "数据库"
 
-# 查看状态
+# 看看它记住了多少
 corivo status
-
-# 启动心跳守护进程
-corivo start
 ```
 
 ---
 
-## 记忆类型
+## 关于记忆
 
 | 类型 | 说明 | 示例 |
 |------|------|------|
-| 事实 (Fact) | 客观信息 | 用户生日、服务器配置 |
-| 知识 (Knowledge) | 学习内容 | API 用法、部署流程 |
-| 决策 (Decision) | 技术选择 | 使用 React、选择 PostgreSQL |
-| 指令 (Instruction) | 用户偏好 | 代码风格、命名习惯 |
+| 事实 | 关于你或他人的事实 | 我是产品经理、Sarah 是后端负责人 |
+| 知识 | 你学到的知识 | React hooks 用法、部署流程 |
+| 决策 | 你做过的选择 | 用 PostgreSQL、选 TypeScript |
+| 偏好 | 你的习惯和喜好 | 2 空格缩进、简洁代码风格 |
 
 ---
 
-## Claude Code 插件技能
+## 它住在哪
 
-### corivo-save
-保存对话中的重要信息
-
-**触发词**：保存这个、记住、记下来
-
-### corivo-query
-查询之前保存的记忆
-
-**触发词**：我之前说过、记得吗、我们决定
-
-### corivo-status
-状态栏显示记忆统计
-
----
-
-## 配置
-
-```bash
-~/.corivo/
-├── corivo.db      # SQLite 数据库（加密）
-├── config.json    # 配置文件
-└── recovery.key   # 恢复密钥（请妥善保管）
 ```
+~/.corivo/
+├── corivo.db      # 它的记忆（加密保护）
+├── config.json    # 它的配置
+└── identity.json  # 它的身份
+```
+
+所有数据都在你的电脑上，加密保存，只有你能访问。
 
 ---
 
 ## 文档
 
-- [设计文档 v0.10](./v0.10/README.md) - 完整的架构和设计
-- [插件 README](./corivo-plugin/README.md) - Claude Code 插件详情
-- [使用示例](./corivo-plugin/EXAMPLES.md) - 实际使用场景
+- [完整设计文档](./v0.10/README.md) - 了解它是如何工作的
+- [插件说明](./corivo-plugin/README.md) - Claude Code 集成详情
+- [使用示例](./corivo-plugin/EXAMPLES.md) - 更多对话场景
 
 ---
 
 ## 开发
 
 ```bash
-# 克隆仓库
 git clone https://github.com/xiaolin26/Corivo.git
 cd Corivo
-
-# 安装依赖
 npm install
-
-# 构建
 npm run build
-
-# 测试
 npm test
 ```
 
@@ -161,10 +149,8 @@ npm test
 
 ---
 
-## License
-
-MIT
+**最后更新**：2026-03-19 | **版本**：v0.10.5
 
 ---
 
-**最后更新**：2026-03-19 | **版本**：v0.10.5
+> 它是硅基的生命，为你而活着。
