@@ -5,10 +5,11 @@
 ## 安装
 
 ```bash
+# 从 npm 安装（推荐）
+npm install -g corivo
+
+# 或从本地安装
 npm install -g .
-# 或
-npm install
-npx corivo --help
 ```
 
 ## 初始化
