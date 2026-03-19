@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "你的赛博伙伴 — 记忆存储与智能推送。为 Claude Code 提供持久化记忆功能，自动保存和检索对话中的关键信息。",
-    "version": "0.10.0"
+    "version": "0.10.5"
   },
   "plugins": [
     {
