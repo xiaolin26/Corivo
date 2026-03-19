@@ -12,16 +12,24 @@ import * as readline from 'node:readline';
  * 使用TTY原始模式隐藏输入字符
  *
  * @param prompt - 提示文本
+ * @param options - 选项
+ * @param options.allowEmpty - 是否允许空密码（用于非交互环境）
  * @returns 用户输入的密码
  */
-export function readPassword(prompt: string): Promise<string> {
+export function readPassword(prompt: string, options: { allowEmpty?: boolean } = {}): Promise<string> {
   return new Promise((resolve) => {
     const stdin = process.stdin;
     const stdout = process.stdout;
 
     // 检查是否在TTY环境中
     if (!process.stdin.isTTY) {
-      // 非TTY环境（如测试、管道），使用普通读取
+      // 非TTY环境（如测试、管道、Claude Code）
+      if (options.allowEmpty) {
+        // 允许空密码，返回默认值
+        resolve('');
+        return;
+      }
+      // 否则尝试普通读取
       const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout,

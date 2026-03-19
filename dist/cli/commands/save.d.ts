@@ -8,6 +8,7 @@ interface SaveOptions {
     annotation?: string;
     source?: string;
     pending?: boolean;
+    noPassword?: boolean;
 }
 export declare function saveCommand(options: SaveOptions): Promise<void>;
 export {};

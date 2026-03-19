@@ -6,6 +6,17 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+// 读取版本号
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+// 在开发环境中从项目根目录读取，在生产环境中从 dist 目录读取
+const packagePath = join(__dirname, '../../package.json');
+const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8'));
+const VERSION = packageJson.version;
 
 // 导入命令
 import { initCommand } from './commands/init.js';
@@ -16,13 +27,14 @@ import { startCommand, startWatchCommand } from './commands/start.js';
 import { stopCommand } from './commands/stop.js';
 import { doctorCommand } from './commands/doctor.js';
 import { recoverCommand } from './commands/recover.js';
+import { injectCommand } from './commands/inject.js';
 
 const program = new Command();
 
 program
   .name('corivo')
   .description('你的赛博伙伴 — 记忆存储与智能推送')
-  .version('0.10.0-mvp');
+  .version(VERSION);
 
 // 注册命令
 program
@@ -37,7 +49,8 @@ program
   .option('-a, --annotation <text>', '标注（性质 · 领域 · 标签）')
   .option('-s, --source <text>', '来源')
   .option('--pending', '以 pending 模式保存（稍后由心跳进程自动标注）')
-  .action(saveCommand);
+  .option('--no-password', '跳过密码输入（开发模式）')
+  .action((options) => saveCommand(options));
 
 program
   .command('query')
@@ -46,12 +59,14 @@ program
   .option('-l, --limit <number>', '返回数量', '10')
   .option('-v, --verbose', '显示详细信息')
   .option('-p, --pattern', '显示决策模式')
-  .action(queryCommand);
+  .option('--no-password', '跳过密码输入（开发模式）')
+  .action((query, options) => queryCommand(query, options));
 
 program
   .command('status')
   .description('查看状态')
-  .action(statusCommand);
+  .option('--no-password', '跳过密码输入（开发模式）')
+  .action((options) => statusCommand(options));
 
 program
   .command('start')
@@ -79,6 +94,13 @@ program
   .command('recover')
   .description('密钥恢复')
   .action(recoverCommand);
+
+program
+  .command('inject')
+  .description('注入 Corivo 规则到项目')
+  .option('-t, --target <path>', '目标项目路径')
+  .option('--eject', '移除已注入的规则')
+  .action((options) => injectCommand(options));
 
 // 错误处理
 program.configureOutput({

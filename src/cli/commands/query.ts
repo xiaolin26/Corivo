@@ -17,6 +17,7 @@ interface QueryOptions {
   limit?: string;
   verbose?: boolean;
   pattern?: boolean;
+  noPassword?: boolean;
 }
 
 export async function queryCommand(query: string, options: QueryOptions): Promise<void> {
@@ -32,12 +33,25 @@ export async function queryCommand(query: string, options: QueryOptions): Promis
     throw new ConfigError('Corivo 未初始化。请先运行: corivo init');
   }
 
-  // 解密数据库密钥
-  const password = await readPassword('请输入主密码: ');
-  const salt = Buffer.from(config.salt, 'base64');
-  const masterKey = KeyManager.deriveMasterKey(password, salt);
-  const encryptedDbKey = config.encrypted_db_key;
-  const dbKey = KeyManager.decryptDatabaseKey(encryptedDbKey, masterKey);
+  // 解密数据库密钥（可选密码）
+  let dbKey: Buffer;
+  const skipPassword = options.noPassword || process.env.CORIVO_NO_PASSWORD === '1';
+
+  if (skipPassword) {
+    // 使用默认密钥（不加密模式）
+    dbKey = KeyManager.generateDatabaseKey();
+  } else {
+    const password = await readPassword('请输入主密码: ', { allowEmpty: !process.stdin.isTTY });
+    if (password === '') {
+      // 空密码表示跳过
+      dbKey = KeyManager.generateDatabaseKey();
+    } else {
+      const salt = Buffer.from(config.salt, 'base64');
+      const masterKey = KeyManager.deriveMasterKey(password, salt);
+      const encryptedDbKey = config.encrypted_db_key;
+      dbKey = KeyManager.decryptDatabaseKey(encryptedDbKey, masterKey);
+    }
+  }
 
   // 打开数据库
   const dbPath = getDefaultDatabasePath();

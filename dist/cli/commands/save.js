@@ -36,12 +36,26 @@ export async function saveCommand(options) {
     if (annotation && !validateAnnotation(annotation)) {
         throw new ValidationError('标注格式无效。格式应为 "性质 · 领域 · 标签"，例如: "决策 · project · corivo"');
     }
-    // 解密数据库密钥
-    const password = await readPassword('请输入主密码: ');
-    const salt = Buffer.from(config.salt, 'base64');
-    const masterKey = KeyManager.deriveMasterKey(password, salt);
-    const encryptedDbKey = config.encrypted_db_key;
-    const dbKey = KeyManager.decryptDatabaseKey(encryptedDbKey, masterKey);
+    // 解密数据库密钥（可选密码）
+    let dbKey;
+    const skipPassword = options.noPassword || process.env.CORIVO_NO_PASSWORD === '1';
+    if (skipPassword) {
+        // 使用默认密钥（不加密模式）
+        dbKey = KeyManager.generateDatabaseKey();
+    }
+    else {
+        const password = await readPassword('请输入主密码: ', { allowEmpty: !process.stdin.isTTY });
+        if (password === '') {
+            // 空密码表示跳过
+            dbKey = KeyManager.generateDatabaseKey();
+        }
+        else {
+            const salt = Buffer.from(config.salt, 'base64');
+            const masterKey = KeyManager.deriveMasterKey(password, salt);
+            const encryptedDbKey = config.encrypted_db_key;
+            dbKey = KeyManager.decryptDatabaseKey(encryptedDbKey, masterKey);
+        }
+    }
     // 打开数据库
     const dbPath = getDefaultDatabasePath();
     const db = CorivoDatabase.getInstance({ path: dbPath, key: dbKey });
