@@ -1,79 +1,227 @@
 # Corivo Claude Code Plugin
 
-你的赛博伙伴 — 为 Claude Code 提供持久化记忆功能。
+Your Cyber Partner — Persistent memory for Claude Code. Automatically saves and retrieves important information from your conversations.
 
-## 功能
+## Features
 
-- **保存记忆** - 将对话中的重要信息保存到数据库
-- **查询记忆** - 检索之前保存的信息
-- **状态显示** - 在状态栏显示记忆统计
+- **Save Memories** - Store important information from conversations
+- **Query Memories** - Retrieve previously saved information with full-text search
+- **Status Display** - View memory statistics in the status bar
 
-## 安装
+## Installation
 
-### 前置条件
+### Prerequisites
 
-1. 首先安装 Corivo CLI：
+1. Install Corivo CLI first:
 ```bash
 npm install -g corivo
 corivo init
 ```
 
-2. 然后在 Claude Code 中安装插件：
+2. Install the plugin in Claude Code:
 ```
 /plugin install xiaolin26/corivo
 ```
 
-## 使用
+## Use Cases
 
-### 保存记忆
+### 1. Remember Your Preferences
 
-当你说 "保存这个" 或 "记住" 时，Claude 会自动保存重要信息：
-
-```
-你: 我叫晓力，是产品经理
-Claude: 我来保存这个信息...
-```
-
-### 查询记忆
-
-当问 "我之前说过..." 时，Claude 会查询相关记忆：
+Claude can remember your coding style, preferences, and settings:
 
 ```
-你: 我之前对代码风格有什么要求？
-Claude: 根据记忆，你喜欢简洁的代码风格...
+You: I prefer 2-space indentation and camelCase for function names
+Claude: [corivo] Saving your coding preferences...
 ```
 
-### 状态栏
+Later sessions:
+```
+You: How should I format this code?
+Claude: Based on your saved preferences, I'll use 2-space indentation and camelCase...
+```
 
-状态栏显示记忆统计：
-- 总记忆块数
-- 健康度百分比
-- 活跃/冷却/冷冻状态
+### 2. Track Project Decisions
 
-## 技能
+Never forget why you made a technical choice:
+
+```
+You: We chose React over Vue because the team is more familiar with it
+Claude: [corivo] Recording this decision...
+
+You: Why did we pick this library again?
+Claude: [corivo] Found memory: You chose React over Vue because...
+```
+
+### 3. Store Team Knowledge
+
+Build a knowledge base from your daily conversations:
+
+```
+You: The API endpoint for user profiles is /api/users/:id
+Claude: [corivo] Saving API documentation...
+
+You: What's the endpoint for getting user data?
+Claude: [corivo] According to saved knowledge: /api/users/:id
+```
+
+### 4. Remember People Information
+
+Keep track of colleagues, contacts, and their roles:
+
+```
+You: Sarah is the backend lead, she prefers Go for services
+Claude: [corivo] Saving team member info...
+```
+
+### 5. Document Workflow Processes
+
+Save complex procedures you use often:
+
+```
+You: To deploy: run tests, build Docker image, push to registry, then update k8s
+Claude: [corivo] Saving deployment process...
+```
+
+## Usage Examples
+
+### Saving Memories
+
+Triggered by phrases like:
+- "Save this"
+- "Remember that"
+- "Don't forget"
+- "Note this down"
+
+```
+You: Remember that I use zsh on macOS
+Claude: I'll save this information:
+       Type: Fact (about you)
+       Category: self
+
+       [corivo] Saved: Your shell preference
+```
+
+### Querying Memories
+
+Triggered by phrases like:
+- "What did I say about..."
+- "Do you remember..."
+- "We decided..."
+- "What's my preference on..."
+
+```
+You: What did we decide about the database?
+Claude: Let me check previous decisions...
+
+       [corivo] Found 1 memory:
+       You chose PostgreSQL for better JSON support and ACID compliance.
+
+       You selected PostgreSQL because you need strong JSON support and transactional integrity.
+```
+
+### Memory Types
+
+| Type | Description | Examples |
+|------|-------------|----------|
+| **Fact** | Objective, verifiable info | Birthdays, server configs, API keys |
+| **Knowledge** | Learned concepts | How React hooks work, deployment flows |
+| **Decision** | Technical choices | Using PostgreSQL, choosing TypeScript |
+| **Instruction** | User preferences | Code style, naming conventions |
+
+### Memory Format
+
+```
+{Type} · {Domain} · {Tag}
+
+Examples:
+- 事实 · self · 个人信息      (Fact · self · personal)
+- 决策 · project · 前端框架    (Decision · project · frontend)
+- 知识 · knowledge · API      (Knowledge · knowledge · API)
+- 指令 · self · 代码风格      (Instruction · self · coding-style)
+```
+
+## Status Bar
+
+The status bar shows:
+- **Total blocks** - Number of memories stored
+- **Health** - Database health percentage
+- **States** - Active / Cooling / Frozen memory counts
+
+```
+corivo: 42 blocks | 85% healthy | 38 active
+```
+
+## Skills
 
 ### corivo-save
-保存记忆到数据库。
+Saves information to the Corivo memory database.
+
+**Usage:**
+- Say "save this" or "remember" during conversation
+- Claude will categorize and store the information
+- Automatic type detection based on content
 
 ### corivo-query
-从数据库查询记忆。
+Queries the Corivo memory database.
 
-## 配置
+**Usage:**
+- Ask "what did I say about..." or "do you remember..."
+- Full-text search across all memories
+- Filter by type (decision, fact, knowledge, instruction)
 
-插件使用 `~/.corivo/` 目录存储数据：
-- `corivo.db` - SQLite 数据库
-- `config.json` - 配置文件
+### corivo-status
+Shows memory statistics in the status bar.
 
-## 开发
+**Display:**
+- Total memory count
+- Health percentage
+- Active/inactive distribution
+
+## Configuration
+
+Corivo uses `~/.corivo/` directory:
+- `corivo.db` - SQLite database (encrypted)
+- `config.json` - Plugin configuration
+
+## Advanced Queries
 
 ```bash
-# 构建
-npm run build
+# Search by keyword
+corivo query "React" --limit 10
 
-# 测试
-npm test
+# Filter by type (decisions only)
+corivo query "" --annotation "决策 · project" --limit 5
+
+# Check status
+corivo status --no-password
 ```
 
-## 许可证
+## Privacy & Security
+
+- All data stored locally on your machine
+- Encrypted database with AES-256-GCM
+- No data sent to external servers
+- Full control over your memories
+
+## Development
+
+```bash
+# Build
+npm run build
+
+# Test
+npm test
+
+# Format
+npm run format
+```
+
+## License
 
 MIT
+
+## Links
+
+- [GitHub Repository](https://github.com/xiaolin26/Corivo)
+- [npm Package](https://www.npmjs.com/package/corivo)
+- [Documentation](https://github.com/xiaolin26/Corivo#readme)
