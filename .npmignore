@@ -1,0 +1,40 @@
+# 源文件
+src/
+*.ts
+!*.d.ts
+
+# 测试
+__tests__/
+*.test.ts
+test-*.ts
+*.test.js
+test-*.js
+coverage/
+
+# 开发配置
+.gstack/
+.prettierrc
+.eslintrc.*
+.eslintcache
+
+# 构建输出（除了 dist）
+node_modules/
+
+# 临时文件
+*.log
+*.tmp
+.DS_Store
+
+# 文档（只保留 README）
+MEMORY.md
+CLAUDE.md
+DESIGN.md
+CHANGELOG.md
+VERSION
+TODO.md
+TODOS.md
+docs/
+v0.2/
+v0.5/
+v0.10/
+*.html

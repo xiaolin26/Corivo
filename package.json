@@ -1,11 +1,11 @@
 {
   "name": "corivo",
-  "version": "0.10.0-mvp",
+  "version": "0.10.4",
   "description": "你的赛博伙伴 — 记忆存储与智能推送",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "corivo": "dist/cli/index.js"
+    "corivo": "bin/corivo.js"
   },
   "scripts": {
     "build": "tsc",
