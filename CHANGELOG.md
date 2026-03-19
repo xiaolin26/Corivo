@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.4.0] - 2026-03-19
+
+### Added
+- **Phase 5 - Claude Code 集成**: CLI 改进和插件支持
+  - `--no-password` 选项：支持非交互式环境（Claude Code、自动化脚本）
+  - `inject` 命令：一键将 Corivo 规则注入到项目 CLAUDE.md
+  - `--eject` 选项：移除已注入的规则
+  - 动态版本号：CLI 版本从 package.json 读取
+  - 正确的 shebang：修复全局安装后的可执行文件问题
+
+- **Claude Code 插件支持**:
+  - `corivo-plugin/` 目录：完整的插件结构
+  - `corivo-save.md` skill：保存信息到记忆库
+  - `corivo-query.md` skill：查询记忆库
+  - `status.js`：状态栏显示记忆统计
+  - `.claude-plugin/plugin.json` 和 `marketplace.json`：插件元数据
+
+- **.npmignore**：排除开发文件，优化 npm 包大小
+
+### Changed
+- `readPassword` 函数新增 `allowEmpty` 选项支持非 TTY 环境
+- CLI 命令现在检查 `CORIVO_NO_PASSWORD` 环境变量
+- Claude Code 规则模板改进：更清晰的说明和示例
+
+### Fixed
+- 全局安装后 `corivo` 命令无法执行的问题（缺少 shebang）
+- 版本号硬编码导致显示不一致的问题
+
 ## [0.10.0.0] - 2026-03-18
 
 ### Added
