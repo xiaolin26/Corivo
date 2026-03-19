@@ -4,11 +4,11 @@
 
 ---
 
-**一句话介绍**：给 Claude Code 装上永久记忆，它记得你说过的一切。
+**一句话介绍**：Corivo 是一个活在你工作流中的赛博伙伴，记住你说过的每一句话。
 
 **推荐给朋友**：
-> 装个 Corivo 吧：https://github.com/xiaolin26/Corivo
-> 装后 Claude Code 就有记忆了，说"记住..."就行
+> 试试 Corivo：https://github.com/xiaolin26/Corivo
+> 它会记住你和 Claude 的对话，下次问"我之前说过..."它就知道了
 
 ---
 
