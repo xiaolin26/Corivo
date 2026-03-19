@@ -22,7 +22,7 @@ export class ClaudeCodeIngestor {
       // 检查是否已注入
       try {
         const content = await fs.readFile(claudeMd, 'utf-8');
-        if (content.includes('## Corivo 记忆规则')) {
+        if (content.includes('## Corivo 记忆层')) {
           console.log('✅ 规则已存在，跳过注入');
           return;
         }
