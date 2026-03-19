@@ -36,7 +36,7 @@ describe('ClaudeCodeIngestor (Integration)', () => {
 
       const content = await fs.readFile(claudeMdPath, 'utf-8');
 
-      expect(content).toContain('## Corivo 记忆规则');
+      expect(content).toContain('## Corivo 记忆层');
       expect(content).toContain('corivo save');
     });
 
@@ -71,7 +71,7 @@ describe('ClaudeCodeIngestor (Integration)', () => {
       // 原始内容应该保留
       expect(newContent).toContain('原始内容');
       // 新规则应该添加
-      expect(newContent).toContain('## Corivo 记忆规则');
+      expect(newContent).toContain('## Corivo 记忆层');
       expect(newContent.length).toBeGreaterThan(originalContent.length);
     });
   });

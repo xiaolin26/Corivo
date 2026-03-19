@@ -34,7 +34,8 @@ describe('E2E: CLI Basic Workflow', () => {
 
   it('should show version', () => {
     const result = execSync(`node ${CLI} --version`, { encoding: 'utf-8' });
-    expect(result).toContain('0.10.0-mvp');
+    // Version is now read dynamically from package.json
+    expect(result).toMatch(/\d+\.\d+\.\d+/);
   });
 
   it('should run doctor command (no config)', () => {
