@@ -63,7 +63,7 @@ describe('Update Checker', () => {
       expect(status).toBeDefined();
       expect(status.currentVersion).toBeDefined();
       expect(typeof status.latestVersion).toBe('object'); // can be null or string
-    });
+    }, 30000); // 30 second timeout for network requests
 
     it('should identify when current version is latest', async () => {
       const status = await checkForUpdate();
@@ -92,7 +92,7 @@ describe('Update Checker', () => {
       // Should return hasUpdate=false on error
       expect(status.hasUpdate).toBe(false);
       expect(status.latestVersion).toBeNull();
-    });
+    }, 30000);
 
     it('should handle invalid response format', async () => {
       vi.stubEnv('GITHUB_VERSION_URL', 'https://httpbin.org/html');
@@ -101,7 +101,7 @@ describe('Update Checker', () => {
 
       // Should not crash on invalid JSON
       expect(status.hasUpdate).toBe(false);
-    });
+    }, 30000);
   });
 
   describe('checkForUpdate - Version Pinning', () => {
