@@ -68,7 +68,7 @@ export function generateFirstPush(
 export function getWelcomeMessage(): string {
   const lines: string[] = [];
 
-  lines.push('[corivo] 你好！我是 Corivo，你的赛博伙伴。');
+  lines.push('[corivo] 你好！我是 Corivo，你的硅基同事。');
   lines.push('');
   lines.push('我正在认识你，稍等几秒...');
   lines.push('');

@@ -710,8 +710,19 @@ export class Heartbeat {
 }
 
 // 如果直接运行此文件（作为守护进程）
-// 检测方式：比较 import.meta.url 的文件名部分
-if (import.meta.url.endsWith('heartbeat.js')) {
+// 检测方式：比较 process.argv[1]（当前执行的脚本路径）与 import.meta.url
+const isDirectRun = () => {
+  try {
+    const currentFilePath = new URL(import.meta.url).pathname;
+    const argv1 = process.argv[1];
+    // 规范化路径后比较
+    return currentFilePath === argv1 || currentFilePath.endsWith('/heartbeat.js') && argv1.endsWith('heartbeat.js');
+  } catch {
+    return false;
+  }
+};
+
+if (isDirectRun()) {
   const heartbeat = new Heartbeat();
 
   heartbeat.start().catch((error) => {
