@@ -6,7 +6,7 @@ Corivo 是一个融入用户已有工作流的赛博**伙伴**。它不是一个
 
 ## 版本
 
-当前版本：**v0.10**
+当前版本：**v0.11.0**
 
 详细设计文档见 [README.md](./README.md)
 
@@ -52,4 +52,4 @@ In QA mode, flag any code that doesn't match DESIGN.md.
 
 ---
 
-最后更新：2026-03-19
+最后更新：2026-03-20

@@ -17,14 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CLI 新命令**: `update`、`daemon`、`identity`、`cold-scan`、`inject`、`push`、`query`
 
 ### Changed
-- 重构配置管理: 统一配置读取逻辑到 `src/config.ts`
-- 修复更新检查器破坏性更新逻辑错误
-- 完善 BIP39 词表（2048 个单词）支持恢复密钥生成
+- 重构配置管理，统一配置读取逻辑到 `src/config.ts`
+- 补全 BIP39 词表到完整的 2048 个单词，恢复密钥生成现已可用
 
 ### Fixed
 - Update Checker 破坏性更新逻辑反转的问题
 - 测试清理: 修复数据库单例模式导致的测试间干扰
-- BIP39 词表从 238 词补充到完整的 2048 词
 
 ## [0.10.5] - 2026-03-19
 
