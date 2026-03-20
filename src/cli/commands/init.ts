@@ -21,6 +21,7 @@ import {
   getIdentityId,
   type Fingerprint,
 } from '../../identity/index.js';
+import { saveConfig, type CorivoConfig } from '../../config.js';
 import { startCommand } from './start.js';
 
 /**
@@ -113,15 +114,18 @@ export async function initCommand(): Promise<void> {
   }
 
   // 保存配置
-  const configPath = path.join(configDir, 'config.json');
-  const config = {
-    version: '0.10.0-mvp',
+  const config: CorivoConfig = {
+    version: '0.11.0',
     created_at: new Date().toISOString(),
-    identity_id: identityResult.identity.identity_id, // 身份 ID
-    db_key: dbKeyBase64, // 明文数据库密钥
+    identity_id: identityResult.identity.identity_id,
+    db_key: dbKeyBase64,
   };
 
-  await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+  const saveResult = await saveConfig(config, configDir);
+  if (!saveResult.success) {
+    console.log('❌ 配置保存失败: ' + saveResult.error);
+    exit(1);
+  }
 
   console.log('\n═══════════════════════════════════════════════════════');
   console.log('                  ✅ 初始化完成！');

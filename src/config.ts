@@ -1,0 +1,111 @@
+/**
+ * 配置管理模块
+ *
+ * 统一管理 Corivo 的配置文件读取和验证
+ */
+
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'os';
+import { getConfigDir } from './storage/database.js';
+
+/**
+ * Corivo 配置
+ */
+export interface CorivoConfig {
+  /** 配置版本 */
+  version: string;
+  /** 创建时间 */
+  created_at: string;
+  /** 身份 ID */
+  identity_id: string;
+  /** 数据库密钥（base64 编码） */
+  db_key: string;
+}
+
+/**
+ * 加载配置文件
+ *
+ * @param configDir - 配置目录，默认为 ~/.corivo
+ * @returns 配置对象，如果文件不存在或无效则返回 null
+ */
+export async function loadConfig(configDir?: string): Promise<CorivoConfig | null> {
+  const dir = configDir || getConfigDir();
+  const configPath = path.join(dir, 'config.json');
+
+  try {
+    const content = await fs.readFile(configPath, 'utf-8');
+    const config = JSON.parse(content) as CorivoConfig;
+
+    // 验证必需字段
+    if (!config.db_key || !config.identity_id) {
+      return null;
+    }
+
+    return config;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 保存配置文件
+ *
+ * @param config - 配置对象
+ * @param configDir - 配置目录，默认为 ~/.corivo
+ */
+export async function saveConfig(
+  config: CorivoConfig,
+  configDir?: string
+): Promise<{ success: boolean; error?: string }> {
+  const dir = configDir || getConfigDir();
+
+  try {
+    await fs.mkdir(dir, { recursive: true });
+    const configPath = path.join(dir, 'config.json');
+    await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
+/**
+ * 获取数据库密钥
+ *
+ * @param configDir - 配置目录
+ * @returns 数据库密钥（Buffer），如果配置无效则返回 null
+ */
+export async function getDatabaseKey(configDir?: string): Promise<Buffer | null> {
+  const config = await loadConfig(configDir);
+  if (!config) {
+    return null;
+  }
+
+  try {
+    return Buffer.from(config.db_key, 'base64');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 检查 Corivo 是否已初始化
+ *
+ * @param configDir - 配置目录
+ * @returns 是否已初始化
+ */
+export async function isInitialized(configDir?: string): Promise<boolean> {
+  const config = await loadConfig(configDir);
+  return config !== null;
+}
+
+export default {
+  loadConfig,
+  saveConfig,
+  getDatabaseKey,
+  isInitialized
+};

@@ -120,17 +120,16 @@ export async function checkForUpdate(config: UpdateConfig = {}): Promise<UpdateS
   const hasUpdate = compareSemVer(latestVersion, currentVersion) > 0;
   const isBreaking = latestInfo.breaking;
 
-  // 如果有破坏性更新且不允许自动更新，则不视为有更新
-  if (hasUpdate && isBreaking && config.auto !== false) {
-    // 破坏性更新需要手动处理
-  }
+  // 破坏性更新处理：如果用户禁用自动更新，则不触发自动更新
+  // 允许更新的条件：(1) 非破坏性更新 OR (2) 用户启用了自动更新
+  const shouldAutoUpdate = !isBreaking || config.auto !== false;
 
   await saveLastCheckTime(now);
 
   return {
     currentVersion,
     latestVersion,
-    hasUpdate: hasUpdate && (!isBreaking || config.auto === false),
+    hasUpdate: hasUpdate && shouldAutoUpdate,
     isBreaking,
     lastCheck: now,
     nextCheck: now + (config.checkInterval || CHECK_INTERVAL),

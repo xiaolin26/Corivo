@@ -6,9 +6,9 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import path from 'node:path';
 import os from 'os';
-import fs from 'node:fs/promises';
 import { getDaemonManager } from '../../daemon/index.js';
-import { CorivoDatabase, getConfigDir, getDefaultDatabasePath } from '../../storage/database.js';
+import { getConfigDir, getDefaultDatabasePath } from '../../storage/database.js';
+import { loadConfig, isInitialized } from '../../config.js';
 
 export const daemonCommand = new Command('daemon');
 
@@ -39,21 +39,11 @@ daemonCommand
       // 检查是否已初始化
       const configDir = getConfigDir();
       const dbPath = getDefaultDatabasePath();
-      const configPath = path.join(configDir, 'config.json');
 
-      // 读取配置文件获取数据库密钥
-      let config: { db_key?: string };
-      try {
-        const content = await fs.readFile(configPath, 'utf-8');
-        config = JSON.parse(content);
-      } catch {
+      // 读取配置文件
+      const config = await loadConfig(configDir);
+      if (!config) {
         console.log(chalk.yellow('未找到配置文件，请先运行: corivo init'));
-        console.log('');
-        return;
-      }
-
-      if (!config.db_key) {
-        console.log(chalk.yellow('配置文件无效，请先运行: corivo init'));
         console.log('');
         return;
       }
