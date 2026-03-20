@@ -28,6 +28,11 @@ import { stopCommand } from './commands/stop.js';
 import { doctorCommand } from './commands/doctor.js';
 import { recoverCommand } from './commands/recover.js';
 import { injectCommand } from './commands/inject.js';
+import { identityCommand } from './commands/identity.js';
+import { setupPasswordCommand } from './commands/setup-password.js';
+import { unlockCommand } from './commands/unlock.js';
+import { verifyIdentityCommand } from './commands/verify-identity.js';
+import { coldScanCommand } from './commands/cold-scan.js';
 
 const program = new Command();
 
@@ -101,6 +106,34 @@ program
   .option('-t, --target <path>', '目标项目路径')
   .option('--eject', '移除已注入的规则')
   .action((options) => injectCommand(options));
+
+program
+  .command('identity')
+  .description('查看身份信息')
+  .option('-v, --verbose', '显示详细信息')
+  .action((options) => identityCommand(options));
+
+program
+  .command('setup-password')
+  .description('设置主密码（用于数据库加密和跨设备验证）')
+  .option('-f, --force', '强制修改已有密码')
+  .action((options) => setupPasswordCommand(options));
+
+program
+  .command('unlock')
+  .description('解锁并查看数据库内容')
+  .option('-r, --raw', '原始格式输出')
+  .option('-l, --limit <number>', '返回数量', '100')
+  .action((options) => unlockCommand(options));
+
+program
+  .command('verify-identity')
+  .description('跨设备身份验证（指纹 + 密码）')
+  .option('-p, --password <password>', '主密码')
+  .option('-v, --verbose', '显示详细信息')
+  .action((options) => verifyIdentityCommand(options));
+
+program.addCommand(coldScanCommand);
 
 // 错误处理
 program.configureOutput({
