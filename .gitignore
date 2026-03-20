@@ -6,4 +6,24 @@
 # Thumbnail
 ._*
 
+# Node
+node_modules/
+dist/
+*.log
+*.tgz
+
+# Test
+coverage/
+.nyc_output/
+
+# Claude
 .gstack/
+
+# Prebuild
+prebuilds/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
