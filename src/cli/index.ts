@@ -35,6 +35,8 @@ import { verifyIdentityCommand } from './commands/verify-identity.js';
 import { coldScanCommand } from './commands/cold-scan.js';
 import { pushCommand } from './commands/push.js';
 import { firstRunCommand } from './commands/heartbeat-first-run.js';
+import { daemonCommand } from './commands/daemon.js';
+import { updateCommand } from './commands/update.js';
 
 const program = new Command();
 
@@ -138,6 +140,8 @@ program
 program.addCommand(coldScanCommand);
 program.addCommand(pushCommand);
 program.addCommand(firstRunCommand);
+program.addCommand(daemonCommand);
+program.addCommand(updateCommand);
 
 // 错误处理
 program.configureOutput({
